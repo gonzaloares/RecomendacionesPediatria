@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Pautas Pediátricas</title>
     <style>
-        /* Regla universal para que los márgenes internos no descuadren los elementos */
         * {
             box-sizing: border-box;
         }
@@ -15,7 +14,7 @@
             background-color: #f4f7f6;
             color: #333;
             margin: 0;
-            padding: 15px; /* Ligeramente reducido para móviles */
+            padding: 15px; 
         }
         .container {
             max-width: 800px;
@@ -35,14 +34,13 @@
             font-size: 1.6em;
         }
         
-        /* NUEVO SISTEMA PARA LA CAJA DEL PESO (100% Responsive) */
         .input-group {
             background: #eef2f5;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 25px;
             display: flex;
-            flex-wrap: wrap; /* Permite que los elementos bajen de línea si no caben */
+            flex-wrap: wrap; 
             align-items: center;
             gap: 10px;
         }
@@ -50,22 +48,20 @@
             font-weight: bold;
             color: #2c3e50;
             margin: 0;
-            flex: 1 1 100%; /* En móviles ocupa toda la línea */
+            flex: 1 1 100%; 
         }
         input[type="number"] {
             width: 100%;
-            flex: 1 1 100%; /* En móviles ocupa toda la línea */
+            flex: 1 1 100%; 
             padding: 12px;
             border: 1px solid #ccd1d9;
             border-radius: 5px;
             font-size: 16px;
             background-color: #fff;
-            /* appearance: none elimina estilos raros en iOS Safari */
             -webkit-appearance: none;
             appearance: none;
         }
 
-        /* Si la pantalla es más ancha que un móvil (ej. tablet u ordenador), se ponen lado a lado */
         @media (min-width: 600px) {
             label {
                 flex: 0 0 auto;
@@ -137,7 +133,7 @@
             line-height: 1.5;
             color: #333;
             text-align: justify;
-            word-wrap: break-word; /* Evita que palabras largas descuadren el texto */
+            word-wrap: break-word; 
         }
         .alerta {
             color: #e74c3c;
@@ -162,36 +158,36 @@
     <!-- CATEGORÍA RESPIRATORIO -->
     <h3 class="categoria-titulo">Neumología / Respiratorio</h3>
     <div class="buttons">
-        <button onclick="generarPautas('catarro')">Catarro de vías altas</button>
-        <button onclick="generarPautas('bronquiolitis')">Bronquiolitis</button>
+        <button onclick="generarPautas('catarro', this)">Catarro de vías altas</button>
+        <button onclick="generarPautas('bronquiolitis', this)">Bronquiolitis</button>
     </div>
 
     <!-- CATEGORÍA DIGESTIVO -->
     <h3 class="categoria-titulo">Gastroenterología</h3>
     <div class="buttons">
-        <button onclick="generarPautas('gea')">Gastroenteritis aguda</button>
+        <button onclick="generarPautas('gea', this)">Gastroenteritis aguda</button>
     </div>
 
     <!-- CATEGORÍA GENERAL / OTROS -->
     <h3 class="categoria-titulo">General / Alergias / Neurología</h3>
     <div class="buttons">
-        <button onclick="generarPautas('fiebre')">Fiebre</button>
-        <button onclick="generarPautas('picaduras')">Urticaria / Picaduras</button>
-        <button onclick="generarPautas('cefalea')">Cefalea</button>
-        <button onclick="generarPautas('convulsion')">Convulsión febril</button>
+        <button onclick="generarPautas('fiebre', this)">Fiebre</button>
+        <button onclick="generarPautas('picaduras', this)">Urticaria / Picaduras</button>
+        <button onclick="generarPautas('cefalea', this)">Cefalea</button>
+        <button onclick="generarPautas('convulsion', this)">Convulsión febril</button>
     </div>
 
     <div id="area-resultado">
         <h3 style="margin-top:0; color:#2c3e50;">Vista previa del informe:</h3>
         <div id="texto-informe"></div>
         <button class="btn-copiar" onclick="copiarAlPortapapeles()">
-            📋 Copiar texto para el informe
+            📋 Volver a copiar texto
         </button>
     </div>
 </div>
 
 <script>
-    function generarPautas(patologia) {
+    function generarPautas(patologia, btnElement) {
         const pesoInput = document.getElementById('peso').value;
         const peso = parseFloat(pesoInput.replace(',', '.'));
         const areaResultado = document.getElementById('area-resultado');
@@ -251,8 +247,26 @@
                 break;
         }
 
+        // Mostrar texto en pantalla
         textoInforme.textContent = textoFinal;
         areaResultado.style.display = 'block';
+
+        // Copiar automáticamente al portapapeles
+        navigator.clipboard.writeText(textoFinal).then(() => {
+            // Cambiar el estilo del botón pulsado temporalmente
+            const textoOriginal = btnElement.innerHTML;
+            const colorOriginal = btnElement.style.backgroundColor;
+            
+            btnElement.innerHTML = '✅ Copiado';
+            btnElement.style.backgroundColor = '#27ae60'; // Verde de éxito
+            
+            setTimeout(() => {
+                btnElement.innerHTML = textoOriginal;
+                btnElement.style.backgroundColor = colorOriginal; // Volver al original
+            }, 2000);
+        }).catch(err => {
+            console.error('Error al auto-copiar: ', err);
+        });
     }
 
     function copiarAlPortapapeles() {
