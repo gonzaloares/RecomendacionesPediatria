@@ -1,0 +1,258 @@
+Hecho. He añadido la **Convulsión febril** a la sección de "General / Alergias / Neurología".
+
+Además de sustituir el hueco de los antitérmicos por la lógica de cálculo que ya teníamos establecida, he corregido un pequeño error tipográfico del texto original ("convlusión" por "convulsión") y he puesto la primera letra en mayúscula para que el párrafo comience correctamente.
+
+Aquí tienes el código completo con la nueva patología integrada. Fíjate que al final no hago ninguna pregunta extra, tal y como dictan las instrucciones para este tipo de tareas cerradas.
+
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Pautas Pediátricas</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .input-group {
+            margin-bottom: 25px;
+            background: #eef2f5;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        label {
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0;
+        }
+        input[type="number"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccd1d9;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .categoria-titulo {
+            color: #16a085;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .btn-copiar {
+            background-color: #27ae60;
+            width: 100%;
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding: 15px;
+            font-size: 16px;
+        }
+        .btn-copiar:hover {
+            background-color: #219a52;
+        }
+        #area-resultado {
+            display: none;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: #fff;
+            margin-top: 30px;
+        }
+        #texto-informe {
+            font-family: 'Arial', sans-serif;
+            background: #fafafa;
+            padding: 15px;
+            border: 1px dashed #ccc;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            color: #333;
+            text-align: justify;
+        }
+        .alerta {
+            color: #e74c3c;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Generador de Pautas Pediátricas</h1>
+    
+    <div class="input-group">
+        <label for="peso">Peso del paciente (kg):</label>
+        <input type="number" id="peso" placeholder="Ej. 14.5" step="0.1" min="1">
+    </div>
+    
+    <div id="mensaje-error" class="alerta">⚠️ Introduce el peso del paciente para calcular las dosis.</div>
+
+    <!-- CATEGORÍA RESPIRATORIO -->
+    <h3 class="categoria-titulo">Neumología / Respiratorio</h3>
+    <div class="buttons">
+        <button onclick="generarPautas('catarro')">Catarro de vías altas</button>
+        <button onclick="generarPautas('bronquiolitis')">Bronquiolitis</button>
+    </div>
+
+    <!-- CATEGORÍA DIGESTIVO -->
+    <h3 class="categoria-titulo">Gastroenterología</h3>
+    <div class="buttons">
+        <button onclick="generarPautas('gea')">Gastroenteritis aguda</button>
+    </div>
+
+    <!-- CATEGORÍA GENERAL / OTROS -->
+    <h3 class="categoria-titulo">General / Alergias / Neurología</h3>
+    <div class="buttons">
+        <button onclick="generarPautas('fiebre')">Fiebre</button>
+        <button onclick="generarPautas('picaduras')">Urticaria / Picaduras</button>
+        <button onclick="generarPautas('cefalea')">Cefalea</button>
+        <button onclick="generarPautas('convulsion')">Convulsión febril</button>
+    </div>
+
+    <div id="area-resultado">
+        <h3 style="margin-top:0; color:#2c3e50;">Vista previa del informe:</h3>
+        <div id="texto-informe"></div>
+        <button class="btn-copiar" onclick="copiarAlPortapapeles()">
+            📋 Copiar texto para el informe
+        </button>
+    </div>
+</div>
+
+<script>
+    function generarPautas(patologia) {
+        const pesoInput = document.getElementById('peso').value;
+        const peso = parseFloat(pesoInput.replace(',', '.'));
+        const areaResultado = document.getElementById('area-resultado');
+        const textoInforme = document.getElementById('texto-informe');
+        const mensajeError = document.getElementById('mensaje-error');
+        
+        let textoFinal = "";
+
+        if (isNaN(peso) || peso <= 0) {
+            mensajeError.style.display = 'block';
+            areaResultado.style.display = 'none';
+            return;
+        } else {
+            mensajeError.style.display = 'none';
+        }
+
+        // Cálculos estandarizados según indicaciones
+        let dosisPara = (peso * 0.15).toFixed(1); // Paracetamol 100mg/ml (15 mg/kg)
+        
+        // Condicional para el Ibuprofeno según el peso (>20 kg = 40mg/ml, <=20 kg = 20mg/ml)
+        let textoIbuprofeno = "";
+        if (peso <= 20) {
+            let dosisIbu = (peso * 7 / 20).toFixed(1);
+            textoIbuprofeno = `Ibuprofeno 20 mg/ml: ${dosisIbu} ml`;
+        } else {
+            let dosisIbu = (peso * 7 / 40).toFixed(1);
+            textoIbuprofeno = `Ibuprofeno 40 mg/ml: ${dosisIbu} ml`;
+        }
+
+        switch (patologia) {
+            case 'catarro':
+                textoFinal = `Se recomienda mantener una adecuada hidratación, ofreciendo líquidos con frecuencia y sin forzar la alimentación, respetando el apetito del niño. En caso de congestión nasal, pueden realizarse lavados nasales con suero fisiológico, especialmente antes de las tomas y del descanso nocturno. Si presenta fiebre y malestar, puede administrar Paracetamol 100 mg/ml: ${dosisPara} ml cada 6-8 horas; o ${textoIbuprofeno} cada 6-8 horas.\n\nEs aconsejable evitar la exposición al humo del tabaco y no utilizar jarabes para la tos, mucolíticos o descongestionantes sin indicación médica.\n\nLa evolución suele ser favorable en los próximos días, aunque la mucosidad y la tos pueden persistir algo más de una semana. Puede retomar su actividad habitual cuando se encuentre bien y permanezca al menos 24 horas sin fiebre. Deben consultar nuevamente si presenta dificultad para respirar, respiración rápida, hundimiento de las costillas, decaimiento importante, somnolencia excesiva, irritabilidad marcada, rechazo de líquidos o empeoramiento del estado general.`;
+                break;
+
+            case 'bronquiolitis':
+                textoFinal = `Las medidas más importantes en domicilio son realizar lavados nasales frecuentes con suero fisiológico, especialmente antes de las tomas y del descanso, ofrecer tomas pequeñas y frecuentes para mantener una adecuada hidratación y alimentación, y mantener al niño en posición semiincorporada para facilitar la respiración. Si presenta fiebre que le produce malestar administrar Paracetamol 100 mg/ml: ${dosisPara} ml cada 6-8 horas; o ${textoIbuprofeno} cada 6-8 horas. Es importante evitar la exposición al humo del tabaco y extremar el lavado de manos para disminuir el riesgo de contagio.\n\nLa evolución suele ser favorable en los próximos días, aunque la tos y los mocos pueden persistir durante más tiempo. Deben vigilar la respiración y consultar nuevamente si presenta respiración rápida, hundimiento de las costillas, pausas respiratorias, coloración azulada de labios, dificultad importante para alimentarse, vómitos repetidos, menos cantidad de orina, decaimiento marcado o empeoramiento del estado general.`;
+                break;
+
+            case 'cefalea':
+                textoFinal = `Se recomienda mantener reposo relativo, favorecer una buena hidratación y evitar ayunos prolongados. Durante los episodios de dolor de cabeza es aconsejable permanecer en un ambiente tranquilo, con poca luz y evitando el uso de pantallas. Puede administrarse Paracetamol 100 mg/ml: ${dosisPara} ml cada 6-8 horas; o ${textoIbuprofeno} cada 6-8 horas, preferiblemente al inicio del dolor.\n\nPodrá retomar su actividad habitual y acudir al colegio cuando se encuentre bien y el dolor esté controlado. Deben consultar nuevamente si presenta vómitos persistentes, somnolencia excesiva, dificultad para caminar o mover alguna extremidad, alteraciones de la visión o del habla, dolor muy intenso que no mejora con analgesia habitual, cefalea que le despierta por la noche o empeoramiento progresivo del estado general.`;
+                break;
+                
+            case 'convulsion':
+                textoFinal = `En caso de fiebre que le produce malestar administrar antitérmicos (Paracetamol 100 mg/ml: ${dosisPara} ml cada 6-8 horas; o ${textoIbuprofeno} cada 6-8 horas), aunque éstos no han demostrado impedir una nueva convulsión. En caso de repetirse una convulsión, deben colocar al niño tumbado de lado en un lugar seguro, sin introducir nada en la boca y observando la duración del episodio. Tras la crisis puede encontrarse somnoliento o algo confuso durante un corto periodo de tiempo, lo cual suele ser esperable. Podrá retomar su actividad habitual cuando lleve al menos 24 horas sin fiebre y se encuentre bien.\n\nDeben acudir nuevamente a urgencias si la convulsión se repite, si presenta dificultad para despertarle, comportamiento anormal, irritabilidad importante, vómitos repetidos, dolor de cabeza intenso o empeoramiento del estado general. Las convulsiones febriles suelen tener buen pronóstico y no afectan al desarrollo neurológico posterior del niño.`;
+                break;
+
+            case 'fiebre':
+                textoFinal = `Mantenga al niño con ropa ligera y en una habitación con temperatura agradable. Ofrezca líquidos con frecuencia para mantener una buena hidratación. Para el control de la fiebre y el malestar puede administrar Paracetamol 100 mg/ml: ${dosisPara} ml cada 6-8 horas, o ${textoIbuprofeno} cada 6-8 horas.\n\nAcudir a Urgencias si aparecen manchas en la piel que no desaparecen al estirarla, dificultad para respirar, decaimiento extremo, irritabilidad inusual o fiebre persistente durante más de 3-4 días.`;
+                break;
+
+            case 'gea':
+                let volumenSuero = Math.round(peso * 10);
+                textoFinal = `La prioridad es prevenir la deshidratación. Mantener dieta normal según tolerancia, sin forzar alimentos sólidos ni realizar dietas astringentes estrictas. Evitar bebidas azucaradas o isotónicas. Como pauta de rehidratación, ofrecer unos ${volumenSuero} ml de Suero de Rehidratación Oral (SRO) tras cada deposición líquida o vómito abundante, administrado a pequeños sorbos.\n\nAcudir a Urgencias en caso de intolerancia oral total, si no moja el pañal en 6-8 horas, o si presenta llanto sin lágrimas, ojos hundidos o sequedad extrema.`;
+                break;
+
+            case 'picaduras':
+                let dosisPolaramine = (peso * 0.25).toFixed(1);
+                textoFinal = `Lavar la zona con agua y jabón neutro. Aplicar frío local durante 10-15 minutos. Si el picor es muy intenso, puede administrar un antihistamínico oral como Dexclorfeniramina 2mg/5ml: ${dosisPolaramine} ml cada 6-8 horas.\n\nAcudir a urgencias inmediatamente si presenta hinchazón en labios, lengua o párpados, o dificultad para respirar, tragar o hablar.`;
+                break;
+        }
+
+        textoInforme.textContent = textoFinal;
+        areaResultado.style.display = 'block';
+    }
+
+    function copiarAlPortapapeles() {
+        const texto = document.getElementById('texto-informe').innerText;
+        navigator.clipboard.writeText(texto).then(() => {
+            const btn = document.querySelector('.btn-copiar');
+            const textoOriginal = btn.innerHTML;
+            btn.innerHTML = '✅ ¡Copiado con éxito!';
+            btn.style.backgroundColor = '#1e8449';
+            setTimeout(() => {
+                btn.innerHTML = textoOriginal;
+                btn.style.backgroundColor = '#27ae60';
+            }, 2000);
+        }).catch(err => {
+            console.error('Error: ', err);
+            alert('No se pudo copiar el texto. Selecciónalo manualmente.');
+        });
+    }
+</script>
+
+</body>
+</html>
+
+```
