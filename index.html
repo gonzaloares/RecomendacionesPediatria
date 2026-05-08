@@ -5,20 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Pautas Pediátricas</title>
     <style>
+        /* Regla universal para que los márgenes internos no descuadren los elementos */
+        * {
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f7f6;
             color: #333;
             margin: 0;
-            padding: 20px;
+            padding: 15px; /* Ligeramente reducido para móviles */
         }
         .container {
             max-width: 800px;
             margin: 0 auto;
             background: white;
-            padding: 30px;
+            padding: 25px;
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            width: 100%;
         }
         h1 {
             color: #2c3e50;
@@ -26,31 +32,49 @@
             border-bottom: 2px solid #eee;
             padding-bottom: 15px;
             margin-bottom: 25px;
-            font-size: 1.8em;
+            font-size: 1.6em;
         }
+        
+        /* NUEVO SISTEMA PARA LA CAJA DEL PESO (100% Responsive) */
         .input-group {
-            margin-bottom: 25px;
             background: #eef2f5;
             padding: 15px;
             border-radius: 8px;
+            margin-bottom: 25px;
             display: flex;
+            flex-wrap: wrap; /* Permite que los elementos bajen de línea si no caben */
             align-items: center;
-            gap: 15px;
+            gap: 10px;
         }
         label {
             font-weight: bold;
             color: #2c3e50;
             margin: 0;
-            white-space: nowrap;
+            flex: 1 1 100%; /* En móviles ocupa toda la línea */
         }
         input[type="number"] {
-            flex: 1;
+            width: 100%;
+            flex: 1 1 100%; /* En móviles ocupa toda la línea */
             padding: 12px;
             border: 1px solid #ccd1d9;
             border-radius: 5px;
             font-size: 16px;
-            box-sizing: border-box; /* Evita que el padding descuadre el input */
+            background-color: #fff;
+            /* appearance: none elimina estilos raros en iOS Safari */
+            -webkit-appearance: none;
+            appearance: none;
         }
+
+        /* Si la pantalla es más ancha que un móvil (ej. tablet u ordenador), se ponen lado a lado */
+        @media (min-width: 600px) {
+            label {
+                flex: 0 0 auto;
+            }
+            input[type="number"] {
+                flex: 1 1 auto;
+            }
+        }
+
         .categoria-titulo {
             color: #16a085;
             border-bottom: 1px solid #eee;
@@ -61,7 +85,7 @@
         }
         .buttons {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 10px;
             margin-bottom: 20px;
         }
@@ -69,12 +93,13 @@
             background-color: #3498db;
             color: white;
             border: none;
-            padding: 15px 12px; /* Un poco más alto para tocar mejor con el dedo */
+            padding: 15px 10px; 
             border-radius: 6px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: background 0.2s;
+            width: 100%;
         }
         button:hover {
             background-color: #2980b9;
@@ -100,6 +125,7 @@
             padding: 20px;
             background-color: #fff;
             margin-top: 30px;
+            width: 100%;
         }
         #texto-informe {
             font-family: 'Arial', sans-serif;
@@ -111,30 +137,13 @@
             line-height: 1.5;
             color: #333;
             text-align: justify;
+            word-wrap: break-word; /* Evita que palabras largas descuadren el texto */
         }
         .alerta {
             color: #e74c3c;
             font-weight: bold;
             margin-bottom: 15px;
             display: none;
-        }
-
-        /* AJUSTE ESPECÍFICO PARA MÓVILES */
-        @media (max-width: 500px) {
-            .input-group {
-                flex-direction: column; /* Apila los elementos en vertical */
-                align-items: stretch;   /* Estira el recuadro a los bordes */
-                gap: 10px;
-            }
-            input[type="number"] {
-                width: 100%;
-            }
-            label {
-                white-space: normal; /* Permite que el texto baje de línea si es largo */
-            }
-            .container {
-                padding: 15px;
-            }
         }
     </style>
 </head>
@@ -199,10 +208,8 @@
             mensajeError.style.display = 'none';
         }
 
-        // Cálculos estandarizados según indicaciones
-        let dosisPara = (peso * 0.15).toFixed(1); // Paracetamol 100mg/ml (15 mg/kg)
+        let dosisPara = (peso * 0.15).toFixed(1); 
         
-        // Condicional para el Ibuprofeno según el peso (>20 kg = 40mg/ml, <=20 kg = 20mg/ml)
         let textoIbuprofeno = "";
         if (peso <= 20) {
             let dosisIbu = (peso * 7 / 20).toFixed(1);
