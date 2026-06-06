@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Pautas Pediátricas</title>
+    <title>Autotextos</title>
     <style>
         * {
             box-sizing: border-box;
@@ -30,9 +30,63 @@
             text-align: center;
             border-bottom: 2px solid #eee;
             padding-bottom: 15px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             font-size: 1.6em;
         }
+
+        /* --- BUSCADOR --- */
+        .buscador-container {
+            margin-bottom: 20px;
+        }
+        #buscador {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #ccd1d9;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #fff;
+            transition: border-color 0.3s;
+        }
+        #buscador:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        /* --- SISTEMA DE PESTAÑAS --- */
+        .tabs-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .tab-btn {
+            flex: 1;
+            background-color: #eef2f5;
+            color: #2c3e50;
+            border: 2px solid transparent;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            background-color: #2c3e50;
+            color: white;
+            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.3);
+        }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* ------------------------- */
         
         .input-group {
             background: #eef2f5;
@@ -63,12 +117,8 @@
         }
 
         @media (min-width: 600px) {
-            label {
-                flex: 0 0 auto;
-            }
-            input[type="number"] {
-                flex: 1 1 auto;
-            }
+            label { flex: 0 0 auto; }
+            input[type="number"] { flex: 1 1 auto; }
         }
 
         .categoria-titulo {
@@ -78,6 +128,7 @@
             margin-top: 25px;
             margin-bottom: 15px;
             font-size: 1.1em;
+            transition: all 0.2s;
         }
         .buttons {
             display: grid;
@@ -85,7 +136,7 @@
             gap: 10px;
             margin-bottom: 20px;
         }
-        button {
+        button.action-btn {
             background-color: #3498db;
             color: white;
             border: none;
@@ -97,11 +148,21 @@
             transition: background 0.2s;
             width: 100%;
         }
-        button:hover {
+        button.action-btn:hover {
             background-color: #2980b9;
         }
+        
+        button.explo-btn {
+            background-color: #8e44ad;
+        }
+        button.explo-btn:hover {
+            background-color: #732d91;
+        }
+
         .btn-copiar {
             background-color: #27ae60;
+            color: white;
+            border: none;
             width: 100%;
             margin-top: 15px;
             display: flex;
@@ -110,6 +171,9 @@
             gap: 8px;
             padding: 15px;
             font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
         }
         .btn-copiar:hover {
             background-color: #219a52;
@@ -122,6 +186,7 @@
             background-color: #fff;
             margin-top: 30px;
             width: 100%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
         #texto-informe {
             font-family: 'Arial', sans-serif;
@@ -146,37 +211,79 @@
 <body>
 
 <div class="container">
-    <h1>Generador de Pautas Pediátricas</h1>
-    
-    <div class="input-group">
-        <label for="peso">Peso del paciente (kg):</label>
-        <input type="number" id="peso" placeholder="Ej. 14.5" step="0.1" min="1">
-    </div>
-    
-    <div id="mensaje-error" class="alerta">⚠️ Introduce el peso del paciente para calcular las dosis.</div>
+    <h1>Autotextos</h1>
 
-    <!-- CATEGORÍA RESPIRATORIO -->
-    <h3 class="categoria-titulo">Neumología / Respiratorio</h3>
-    <div class="buttons">
-        <button onclick="generarPautas('catarro', this)">Catarro de vías altas</button>
-        <button onclick="generarPautas('bronquiolitis', this)">Bronquiolitis</button>
+    <!-- BUSCADOR -->
+    <div class="buscador-container">
+        <input type="text" id="buscador" placeholder="🔍 Buscar patología o exploración..." onkeyup="filtrarBotones()">
     </div>
 
-    <!-- CATEGORÍA DIGESTIVO -->
-    <h3 class="categoria-titulo">Gastroenterología</h3>
-    <div class="buttons">
-        <button onclick="generarPautas('gea', this)">Gastroenteritis aguda</button>
+    <!-- PESTAÑAS -->
+    <div class="tabs-nav">
+        <button class="tab-btn active" onclick="cambiarTab('recomendaciones', this)">Recomendaciones</button>
+        <button class="tab-btn" onclick="cambiarTab('exploracion', this)">Exploración Física</button>
     </div>
 
-    <!-- CATEGORÍA GENERAL / OTROS -->
-    <h3 class="categoria-titulo">General / Alergias / Neurología</h3>
-    <div class="buttons">
-        <button onclick="generarPautas('fiebre', this)">Fiebre</button>
-        <button onclick="generarPautas('picaduras', this)">Urticaria / Picaduras</button>
-        <button onclick="generarPautas('cefalea', this)">Cefalea</button>
-        <button onclick="generarPautas('convulsion', this)">Convulsión febril</button>
+    <!-- CONTENIDO PESTAÑA: RECOMENDACIONES -->
+    <div id="tab-recomendaciones" class="tab-content active">
+        <div class="input-group">
+            <label for="peso">Peso del paciente (kg):</label>
+            <input type="number" id="peso" placeholder="Ej. 14.5" step="0.1" min="1">
+        </div>
+        
+        <div id="mensaje-error" class="alerta">⚠️ Introduce el peso del paciente para calcular las dosis.</div>
+
+        <h3 class="categoria-titulo">Neumología / Respiratorio</h3>
+        <div class="buttons">
+            <button class="action-btn" onclick="generarPautas('catarro', this)">Catarro de vías altas</button>
+            <button class="action-btn" onclick="generarPautas('bronquiolitis', this)">Bronquiolitis</button>
+            <button class="action-btn" onclick="generarPautas('asma_con', this)">Crisis asmática (con corticoide)</button>
+            <button class="action-btn" onclick="generarPautas('asma_sin', this)">Crisis asmática (sin corticoide)</button>
+        </div>
+
+        <h3 class="categoria-titulo">Otorrinolaringología (ORL)</h3>
+        <div class="buttons">
+            <button class="action-btn" onclick="generarPautas('otitis_sin', this)">Otitis (sin antibiótico)</button>
+            <button class="action-btn" onclick="generarPautas('otitis_con', this)">Otitis (con antibiótico)</button>
+        </div>
+
+        <h3 class="categoria-titulo">Gastroenterología</h3>
+        <div class="buttons">
+            <button class="action-btn" onclick="generarPautas('gea', this)">Gastroenteritis aguda</button>
+            <button class="action-btn" onclick="generarPautas('vomitos', this)">Vómitos</button>
+        </div>
+        
+        <h3 class="categoria-titulo">Traumatología / Osteoarticular</h3>
+        <div class="buttons">
+            <button class="action-btn" onclick="generarPautas('esguince', this)">Esguince de tobillo</button>
+            <button class="action-btn" onclick="generarPautas('dedo', this)">Traumatismo de dedo</button>
+        </div>
+
+        <h3 class="categoria-titulo">General / Alergias / Neurología</h3>
+        <div class="buttons">
+            <button class="action-btn" onclick="generarPautas('fiebre', this)">Fiebre</button>
+            <button class="action-btn" onclick="generarPautas('urticaria', this)">Urticaria</button>
+            <button class="action-btn" onclick="generarPautas('cefalea', this)">Cefalea</button>
+            <button class="action-btn" onclick="generarPautas('convulsion', this)">Convulsión febril</button>
+        </div>
     </div>
 
+    <!-- CONTENIDO PESTAÑA: EXPLORACIÓN FÍSICA -->
+    <div id="tab-exploracion" class="tab-content">
+        <h3 class="categoria-titulo">General / Completa</h3>
+        <div class="buttons">
+            <button class="action-btn explo-btn" onclick="generarExploracion('normal', this)">Exploración física normal</button>
+            <button class="action-btn explo-btn" onclick="generarExploracion('recien_nacido', this)">Recién nacido</button>
+        </div>
+        
+        <h3 class="categoria-titulo">Traumatología / Osteoarticular</h3>
+        <div class="buttons">
+            <button class="action-btn explo-btn" onclick="generarExploracion('tobillo_normal', this)">Tobillo normal</button>
+            <button class="action-btn explo-btn" onclick="generarExploracion('esguince_tobillo', this)">Esguince de tobillo</button>
+        </div>
+    </div>
+
+    <!-- ÁREA DE RESULTADOS (COMPARTIDA) -->
     <div id="area-resultado">
         <h3 style="margin-top:0; color:#2c3e50;">Vista previa del informe:</h3>
         <div id="texto-informe"></div>
@@ -187,12 +294,111 @@
 </div>
 
 <script>
+    // --- LÓGICA DEL BUSCADOR ---
+    function filtrarBotones() {
+        const query = document.getElementById('buscador').value.toLowerCase();
+        // Seleccionamos todos los títulos de categoría en toda la página
+        const categorias = document.querySelectorAll('.categoria-titulo');
+
+        categorias.forEach(h3 => {
+            // El div de botones está siempre justo debajo del h3
+            const contenedorBotones = h3.nextElementSibling;
+            const botones = contenedorBotones.querySelectorAll('button');
+            let algunBotonVisible = false;
+
+            botones.forEach(btn => {
+                const textoBoton = btn.textContent.toLowerCase();
+                if (textoBoton.includes(query)) {
+                    btn.style.display = ''; // Muestra el botón
+                    algunBotonVisible = true;
+                } else {
+                    btn.style.display = 'none'; // Oculta el botón
+                }
+            });
+
+            // Si no hay ningún botón visible en la categoría, ocultamos el título y el contenedor
+            if (algunBotonVisible) {
+                h3.style.display = '';
+                contenedorBotones.style.display = 'grid'; // Restaura el display: grid de CSS
+            } else {
+                h3.style.display = 'none';
+                contenedorBotones.style.display = 'none';
+            }
+        });
+    }
+
+    // --- LÓGICA DE LAS PESTAÑAS ---
+    function cambiarTab(idTab, btnPulsado) {
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        document.getElementById('tab-' + idTab).classList.add('active');
+        btnPulsado.classList.add('active');
+
+        document.getElementById('area-resultado').style.display = 'none';
+        document.getElementById('mensaje-error').style.display = 'none';
+        
+        // Limpiar buscador al cambiar de pestaña (opcional, pero mejora la experiencia)
+        document.getElementById('buscador').value = '';
+        filtrarBotones(); 
+    }
+
+    // --- FUNCIÓN COMPARTIDA PARA MOSTRAR Y COPIAR ---
+    function procesarYCopiarTexto(textoFinal, btnElement) {
+        const areaResultado = document.getElementById('area-resultado');
+        const textoInforme = document.getElementById('texto-informe');
+
+        textoInforme.textContent = textoFinal;
+        areaResultado.style.display = 'block';
+
+        navigator.clipboard.writeText(textoFinal).then(() => {
+            const textoOriginal = btnElement.innerHTML;
+            const colorOriginal = btnElement.style.backgroundColor;
+            
+            btnElement.innerHTML = '✅ Copiado';
+            btnElement.style.backgroundColor = '#27ae60'; 
+            
+            setTimeout(() => {
+                btnElement.innerHTML = textoOriginal;
+                btnElement.style.backgroundColor = colorOriginal; 
+            }, 2000);
+        }).catch(err => {
+            console.error('Error al auto-copiar: ', err);
+        });
+    }
+
+    // --- LÓGICA DE EXPLORACIÓN FÍSICA ---
+    function generarExploracion(tipo, btnElement) {
+        let textoFinal = "";
+
+        switch (tipo) {
+            case 'normal':
+                textoFinal = `Triángulo de evaluación pediátrica no alterado. Buen estado general. Adecuado estado de hidratación, nutrición y perfusión. Buena coloración de piel y mucosas. No exantema. No petequias. \nAuscultación cardíaca: tonos rítmicos; no se auscultan soplos.\nAuscultación pulmonar: murmullo vesicular conservado, buena ventilación bilateral. No ruidos patológicos sobreañadidos.\nAbdomen: blando y depresible, no doloroso a la palpación, no se palpan masas ni visceromegalias. \nORL: orofaringe normal; otoscopia: ambos tímpanos normales. \nSistema nervioso: no signos meníngeos ni rigidez de nuca. No focalidad neurológica.`;
+                break;
+            case 'recien_nacido':
+                textoFinal = `Buen estado general. Normoconfigurado. Fontanela anterior normotensa. Suturas normales. Buena coloración de piel y mucosas. No signos de dificultad respiratoria. No aspecto séptico.\nAuscultación cardiaca: tonos rítmicos, no soplos. Pulsos femorales palpables y simétricos.\nAuscultación pulmonar: buena ventilación bilateral.\nAbdomen: blando, sin masas ni megalias.\nPaladar y clavículas íntegras. Caderas estables. Genitales externos normales. Tono y actitud normales. Reflejos arcaicos presentes.`;
+                break;
+            case 'tobillo_normal':
+                textoFinal = `Tobillo sin signos inflamatorios externos ni hematomas. No presenta puntos óseos dolorosos a la palpación y la movilidad es completa y funcional en todos los planos.\n\nLas maniobras de estabilidad son negativas, sin bostezo articular ni cajón anterior. La marcha es normal, permitiendo el apoyo completo y la carga sin dolor.`;
+                break;
+            case 'esguince_tobillo':
+                textoFinal = `Leve tumefacción en región lateral externa de tobillo, sin deformidad ni signos de lesión grave.\n\nDolor leve a la palpación sobre ligamentos peroneoastragalinos. Movilidad conservada, discretamente dolorosa con la inversión.\n\nSin dolor óseo a la palpación maleolar ni en base del quinto metatarsiano. Estabilidad articular conservada.\n\nPulsos distales presentes y buena perfusión. Sensibilidad y movilidad distal conservadas. Capacidad de apoyo mantenida con discreta molestia.`;
+                break;
+        }
+
+        procesarYCopiarTexto(textoFinal, btnElement);
+    }
+
+    // --- LÓGICA DE RECOMENDACIONES ---
     function generarPautas(patologia, btnElement) {
         const pesoInput = document.getElementById('peso').value;
         const peso = parseFloat(pesoInput.replace(',', '.'));
-        const areaResultado = document.getElementById('area-resultado');
-        const textoInforme = document.getElementById('texto-informe');
         const mensajeError = document.getElementById('mensaje-error');
+        const areaResultado = document.getElementById('area-resultado');
         
         let textoFinal = "";
 
@@ -204,69 +410,132 @@
             mensajeError.style.display = 'none';
         }
 
-        let dosisPara = (peso * 0.15).toFixed(1); 
-        
-        let textoIbuprofeno = "";
-        if (peso <= 20) {
-            let dosisIbu = (peso * 7 / 20).toFixed(1);
-            textoIbuprofeno = `Ibuprofeno 20 mg/ml: ${dosisIbu} ml`;
+        // --- CÁLCULO INTELIGENTE DE ANTITÉRMICOS CON DOSIS MÁXIMAS ---
+        let textoAntitermico = "";
+        let textoAntitermicoCorto = "";
+        let nombreAnalgesicoOtitis = "paracetamol";
+
+        // Paracetamol (Dosis máxima 1 gramo / 1000 mg)
+        let dosisParaMg = peso * 15; 
+        if (dosisParaMg >= 1000) {
+            textoAntitermico = `Paracetamol 1 gramo cada 6-8 horas`;
+            textoAntitermicoCorto = `Paracetamol 1 gramo`;
         } else {
-            let dosisIbu = (peso * 7 / 40).toFixed(1);
-            textoIbuprofeno = `Ibuprofeno 40 mg/ml: ${dosisIbu} ml`;
+            let dosisParaMl = (dosisParaMg / 100).toFixed(1);
+            textoAntitermico = `Paracetamol 100 mg/ml: ${dosisParaMl} ml cada 6-8 horas`;
+            textoAntitermicoCorto = `Paracetamol 100 mg/ml: ${dosisParaMl} ml`;
         }
+
+        // Ibuprofeno (Dosis máxima 400 mg) - Solo a partir de 7 kg
+        if (peso >= 7) {
+            let dosisIbuMg = peso * 7;
+            let textoIbuprofeno = "";
+
+            if (dosisIbuMg >= 400) {
+                textoIbuprofeno = `Ibuprofeno 400 mg`;
+            } else {
+                if (peso <= 20) {
+                    let dosisIbuMl = (dosisIbuMg / 20).toFixed(1);
+                    textoIbuprofeno = `Ibuprofeno 20 mg/ml: ${dosisIbuMl} ml`;
+                } else {
+                    let dosisIbuMl = (dosisIbuMg / 40).toFixed(1);
+                    textoIbuprofeno = `Ibuprofeno 40 mg/ml: ${dosisIbuMl} ml`;
+                }
+            }
+            textoAntitermico += `; o ${textoIbuprofeno} cada 6-8 horas`;
+            textoAntitermicoCorto += `; o ${textoIbuprofeno}`;
+            nombreAnalgesicoOtitis = "ibuprofeno o paracetamol";
+        }
+        // -------------------------------------------------------------
+
+        // Bloques de texto compartidos para asma
+        let textoMascarilla = peso < 20 ? " y mascarilla" : "";
+        let baseAsma1 = `Se recomienda continuar el tratamiento inhalado pautado con salbutamol utilizando siempre cámara espaciadora${textoMascarilla}, administrar 4 inhalaciones cada 4-6 horas en función de la fatiga o la tos, que puede ir espaciando a medida que note mejoría.\n\n`;
+        let baseAsma2 = `Durante los próximos días es conveniente favorecer el reposo relativo, ofrecer buena hidratación y evitar ejercicio intenso, humo de tabaco y otros irritantes respiratorios.\n\nLa tos y los ruidos respiratorios pueden persistir varios días, mejorando progresivamente.\n\nDeben vigilar en casa la aparición de respiración rápida, hundimiento de costillas o pecho al respirar, dificultad para hablar o comer, decaimiento importante o coloración azulada o pálida.\n\nAcudan nuevamente a Urgencias si presenta empeoramiento de la dificultad respiratoria, necesidad de inhalaciones muy frecuentes (cada 2 horas o menos), mala respuesta al tratamiento administrado en domicilio o somnolencia marcada. Se recomienda seguimiento con su pediatra habitual para control evolutivo.`;
 
         switch (patologia) {
             case 'catarro':
-                textoFinal = `Se recomienda mantener una adecuada hidratación, ofreciendo líquidos con frecuencia y sin forzar la alimentación, respetando el apetito del niño. En caso de congestión nasal, pueden realizarse lavados nasales con suero fisiológico, especialmente antes de las tomas y del descanso nocturno. Si presenta fiebre y malestar, puede administrar Paracetamol 100 mg/ml: ${dosisPara} ml cada 6-8 horas; o ${textoIbuprofeno} cada 6-8 horas.\n\nEs aconsejable evitar la exposición al humo del tabaco y no utilizar jarabes para la tos, mucolíticos o descongestionantes sin indicación médica.\n\nLa evolución suele ser favorable en los próximos días, aunque la mucosidad y la tos pueden persistir algo más de una semana. Puede retomar su actividad habitual cuando se encuentre bien y permanezca al menos 24 horas sin fiebre. Deben consultar nuevamente si presenta dificultad para respirar, respiración rápida, hundimiento de las costillas, decaimiento importante, somnolencia excesiva, irritabilidad marcada, rechazo de líquidos o empeoramiento del estado general.`;
+                textoFinal = `Se recomienda mantener una adecuada hidratación, ofreciendo líquidos con frecuencia y sin forzar la alimentación, respetando el apetito del niño. En caso de congestión nasal, pueden realizarse lavados nasales con suero fisiológico, especialmente antes de las tomas y del descanso nocturno. \n\nSi presenta fiebre y malestar, puede administrar ${textoAntitermico}.\n\nEs aconsejable evitar la exposición al humo del tabaco y no utilizar jarabes para la tos, mucolíticos o descongestionantes sin indicación médica.\n\nLa evolución suele ser favorable en los próximos días, aunque la mucosidad y la tos pueden persistir algo más de una semana. Puede retomar su actividad habitual cuando se encuentre bien y permanezca al menos 24 horas sin fiebre. Deben consultar nuevamente si presenta dificultad para respirar, respiración rápida, hundimiento de las costillas, decaimiento importante, somnolencia excesiva, irritabilidad marcada, rechazo de líquidos o empeoramiento del estado general.`;
                 break;
 
             case 'bronquiolitis':
-                textoFinal = `Las medidas más importantes en domicilio son realizar lavados nasales frecuentes con suero fisiológico, especialmente antes de las tomas y del descanso, ofrecer tomas pequeñas y frecuentes para mantener una adecuada hidratación y alimentación, y mantener al niño en posición semiincorporada para facilitar la respiración. Si presenta fiebre que le produce malestar administrar Paracetamol 100 mg/ml: ${dosisPara} ml cada 6-8 horas; o ${textoIbuprofeno} cada 6-8 horas. Es importante evitar la exposición al humo del tabaco y extremar el lavado de manos para disminuir el riesgo de contagio.\n\nLa evolución suele ser favorable en los próximos días, aunque la tos y los mocos pueden persistir durante más tiempo. Deben vigilar la respiración y consultar nuevamente si presenta respiración rápida, hundimiento de las costillas, pausas respiratorias, coloración azulada de labios, dificultad importante para alimentarse, vómitos repetidos, menos cantidad de orina, decaimiento marcado o empeoramiento del estado general.`;
+                textoFinal = `Las medidas más importantes en domicilio son realizar lavados nasales frecuentes con suero fisiológico, especialmente antes de las tomas y del descanso, ofrecer tomas pequeñas y frecuentes para mantener una adecuada hidratación y alimentación, y mantener al niño en posición semiincorporada para facilitar la respiración. \n\nSi presenta fiebre que le produce malestar administrar ${textoAntitermico}. \n\nEs importante evitar la exposición al humo del tabaco y extremar el lavado de manos para disminuir el riesgo de contagio.\n\nLa evolución suele ser favorable en los próximos días, aunque la tos y los mocos pueden persistir durante más tiempo. Deben vigilar la respiración y consultar nuevamente si presenta respiración rápida, hundimiento de las costillas, pausas respiratorias, coloración azulada de labios, dificultad importante para alimentarse, vómitos repetidos, menos cantidad de orina, decaimiento marcado o empeoramiento del estado general.`;
                 break;
 
-            case 'cefalea':
-                textoFinal = `Se recomienda mantener reposo relativo, favorecer una buena hidratación y evitar ayunos prolongados. Durante los episodios de dolor de cabeza es aconsejable permanecer en un ambiente tranquilo, con poca luz y evitando el uso de pantallas. Puede administrarse Paracetamol 100 mg/ml: ${dosisPara} ml cada 6-8 horas; o ${textoIbuprofeno} cada 6-8 horas, preferiblemente al inicio del dolor.\n\nPodrá retomar su actividad habitual y acudir al colegio cuando se encuentre bien y el dolor esté controlado. Deben consultar nuevamente si presenta vómitos persistentes, somnolencia excesiva, dificultad para caminar o mover alguna extremidad, alteraciones de la visión o del habla, dolor muy intenso que no mejora con analgesia habitual, cefalea que le despierta por la noche o empeoramiento progresivo del estado general.`;
+            case 'asma_con':
+                let dosisPaidocortMg = peso * 0.5; 
+                if (dosisPaidocortMg > 30) dosisPaidocortMg = 30; 
+                let dosisPaidocortMl = (dosisPaidocortMg / 3).toFixed(1); 
+                
+                textoFinal = baseAsma1 + `Continuar tratamiento con corticoide oral: Paidocort (3 mg/ml) administrar ${dosisPaidocortMl} ml cada 12 horas durante 3 días.\n\n` + baseAsma2;
                 break;
                 
-            case 'convulsion':
-                textoFinal = `En caso de fiebre que le produce malestar administrar antitérmicos (Paracetamol 100 mg/ml: ${dosisPara} ml cada 6-8 horas; o ${textoIbuprofeno} cada 6-8 horas), aunque éstos no han demostrado impedir una nueva convulsión. En caso de repetirse una convulsión, deben colocar al niño tumbado de lado en un lugar seguro, sin introducir nada en la boca y observando la duración del episodio. Tras la crisis puede encontrarse somnoliento o algo confuso durante un corto periodo de tiempo, lo cual suele ser esperable. Podrá retomar su actividad habitual cuando lleve al menos 24 horas sin fiebre y se encuentre bien.\n\nDeben acudir nuevamente a urgencias si la convulsión se repite, si presenta dificultad para despertarle, comportamiento anormal, irritabilidad importante, vómitos repetidos, dolor de cabeza intenso o empeoramiento del estado general. Las convulsiones febriles suelen tener buen pronóstico y no afectan al desarrollo neurológico posterior del niño.`;
+            case 'asma_sin':
+                textoFinal = baseAsma1 + baseAsma2;
                 break;
 
-            case 'fiebre':
-                textoFinal = `Mantenga al niño con ropa ligera y en una habitación con temperatura agradable. Ofrezca líquidos con frecuencia para mantener una buena hidratación. Para el control de la fiebre y el malestar puede administrar Paracetamol 100 mg/ml: ${dosisPara} ml cada 6-8 horas, o ${textoIbuprofeno} cada 6-8 horas.\n\nAcudir a Urgencias si aparecen manchas en la piel que no desaparecen al estirarla, dificultad para respirar, decaimiento extremo, irritabilidad inusual o fiebre persistente durante más de 3-4 días.`;
+            case 'otitis_sin':
+                textoFinal = `Se recomienda administrar ${nombreAnalgesicoOtitis} cada 6-8 horas de forma pautada durante los primeros 1-2 días para un buen control del dolor (${textoAntitermicoCorto}), sin esperar a que reaparezca la molestia.\n\nNo aplicar gotas, pomadas ni otros productos en el oído sin indicación médica y evitar mojarlo, especialmente si ha presentado supuración.\n\nEn muchos casos la evolución es favorable y mejora con tratamiento analgésico, sin necesidad de antibiótico.\n\nLa mejoría suele producirse en 48-72 horas.\n\nDeben consultar con su pediatra si no mejora tras ese tiempo, si presenta fiebre elevada persistente, supuración por el oído, empeoramiento del estado general o dolor importante.\n\nAcudan nuevamente a Urgencias si aparece somnolencia marcada, irritabilidad intensa, dolor de cabeza importante o inflamación y enrojecimiento detrás de la oreja.`;
+                break;
+
+            case 'otitis_con':
+                let amoxiDias = peso < 12 ? 7 : 5;
+                let mgPorDosisAmoxi = (peso * 80) / 3;
+                let textoAmoxicilina = "";
+
+                if (mgPorDosisAmoxi >= 1000) {
+                    textoAmoxicilina = `Administrar amoxicilina 1 gramo cada 8 horas, durante ${amoxiDias} días.`;
+                } else {
+                    let amoxiDosisMl = (mgPorDosisAmoxi / 50).toFixed(1);
+                    textoAmoxicilina = `Amoxicilina 250 mg/5 ml: administrar ${amoxiDosisMl} ml cada 8 horas, durante ${amoxiDias} días.`;
+                }
+                
+                textoFinal = `Se recomienda administrar ${nombreAnalgesicoOtitis} cada 6-8 horas de forma pautada durante los primeros 1-2 días para un buen control del dolor (${textoAntitermicoCorto}), sin esperar a que reaparezca la molestia.\n\n${textoAmoxicilina}\n\nNo aplicar gotas, pomadas ni otros productos en el oído sin indicación médica y evitar mojarlo, especialmente si ha presentado supuración.\n\nLa mejoría suele producirse en 48-72 horas.\n\nDeben consultar con su pediatra si no mejora tras ese tiempo, si presenta fiebre elevada persistente, supuración por el oído, empeoramiento del estado general o dolor importante.\n\nAcudan nuevamente a Urgencias si aparece somnolencia marcada, irritabilidad intensa, dolor de cabeza importante o inflamación y enrojecimiento detrás de la oreja.`;
                 break;
 
             case 'gea':
                 let volumenSuero = Math.round(peso * 10);
-                textoFinal = `Se recomienda mantener una adecuada hidratación ofreciendo suero de rehidratación oral hiposódico en pequeñas cantidades y de forma frecuente. En caso de vómitos, esperar aproximadamente 30 minutos antes de reiniciar líquidos y ofrecer después cantidades pequeñas de forma progresiva. Tras cada deposición abundante puede administrarse suero de rehidratación oral (${volumenSuero} ml, equivalente a 10 ml/kg). Debe mantener una alimentación normal adaptada a la tolerancia, evitando alimentos ricos en grasa, bebidas azucaradas y refrescos.\n\nDeben consultar nuevamente si presenta vómitos persistentes o verdosos, rechazo de líquidos, diarrea muy abundante, dolor abdominal intenso, sangre abundante en las deposiciones, somnolencia, irritabilidad marcada o signos de deshidratación como boca seca, ausencia de lágrimas, ojos hundidos o disminución de la cantidad de orina. Es importante mantener una correcta higiene de manos para disminuir el riesgo de contagio.`;
+                textoFinal = `Se recomienda mantener una adecuada hidratación ofreciendo suero de rehidratación oral hiposódico en pequeñas cantidades y de forma frecuente. En caso de vómitos, esperar aproximadamente 30 minutos antes de reiniciar líquidos y ofrecer después cantidades pequeñas de forma progresiva. \n\nTras cada deposición abundante administrar unos ${volumenSuero} ml de suero de rehidratación oral. \n\nEn caso de fiebre, para mejorar el malestar general, administrar ${textoAntitermico}.\n\nDebe mantener una alimentación normal adaptada a la tolerancia, evitando alimentos ricos en grasa, bebidas azucaradas y refrescos.\n\nDeben consultar nuevamente si presenta vómitos persistentes o verdosos, rechazo de líquidos, diarrea muy abundante, dolor abdominal intenso, sangre abundante en las deposiciones, somnolencia, irritabilidad marcada o signos de deshidratación como boca seca, ausencia de lágrimas, ojos hundidos o disminución de la cantidad de orina. Es importante mantener una correcta higiene de manos para disminuir el riesgo de contagio.`;
                 break;
 
-            case 'picaduras':
-                let dosisPolaramine = (peso * 0.25).toFixed(1);
-                textoFinal = `Lavar la zona con agua y jabón neutro. Aplicar frío local durante 10-15 minutos. Si el picor es muy intenso, puede administrar un antihistamínico oral como Dexclorfeniramina 2mg/5ml: ${dosisPolaramine} ml cada 6-8 horas.\n\nAcudir a urgencias inmediatamente si presenta hinchazón en labios, lengua o párpados, o dificultad para respirar, tragar o hablar.`;
+            case 'vomitos':
+                textoFinal = `Se recomienda mantener una adecuada hidratación ofreciendo suero de rehidratación oral hiposódico en pequeñas cantidades y de forma frecuente.\n\nEn caso de nuevos vómitos, esperar al menos 20-30 minutos antes de reiniciar la tolerancia oral y posteriormente ofrecer 5 ml cada 5-10 minutos, aumentando progresivamente según tolerancia.\n\nPuede reiniciar su alimentación habitual poco a poco, sin forzar, evitando alimentos muy grasos, fritos, muy condimentados, dulces y bebidas azucaradas.\n\nLa evolución suele ser favorable en pocos días. Deben acudir nuevamente a Urgencias si presenta vómitos persistentes con mala tolerancia de líquidos, signos de deshidratación (somnolencia, decaimiento, ojos hundidos, escasa orina o llanto sin lágrimas), dolor abdominal intenso, sangre o color verdoso en los vómitos, dificultad para despertarlo o empeoramiento del estado general.`;
+                break;
+
+            case 'esguince':
+                textoFinal = `Reposo relativo durante las primeras 48-72 horas, evitando actividades deportivas, saltos o carreras hasta mejoría clínica.\n\nAplicar frío local (envuelto en tela, no directamente sobre la piel) durante 15-20 minutos cada 3-4 horas los primeros 2 días.\n\nMantener elevación de la extremidad siempre que sea posible para disminuir inflamación y dolor.\n\nPuede realizar apoyo progresivo según tolerancia al dolor; si precisa, utilizar vendaje compresivo o inmovilización indicada en urgencias.\n\nAdministrar analgesia habitual si tiene dolor (${textoAntitermicoCorto}).\n\nSe recomienda reinicio progresivo de la actividad física una vez desaparezca el dolor y recupere movilidad normal. Evitar deporte competitivo hasta recuperación completa para disminuir riesgo de recaída.\n\nAcudir nuevamente a urgencias o consultar con su pediatra si presenta incapacidad para apoyar el pie, aumento importante de dolor o inflamación, deformidad, cambios de coloración o temperatura en el pie, pérdida de sensibilidad, fiebre, o ausencia de mejoría en los siguientes días.`;
+                break;
+                
+            case 'dedo':
+                textoFinal = `Reposo relativo de la mano afectada durante los próximos días, evitando actividades que puedan favorecer nuevos golpes o sobrecarga del dedo lesionado.\n\nAplicar frío local (envuelto en tela, no directamente sobre la piel) durante 15-20 minutos cada 3-4 horas las primeras 48 horas para disminuir dolor e inflamación.\n\nPuede movilizar suavemente el dedo según tolerancia para evitar rigidez.\n\nAdministrar analgesia habitual si precisa (${textoAntitermicoCorto}).\n\nLa reincorporación a deporte o actividades de impacto debe realizarse de forma progresiva una vez desaparezca el dolor y recupere movilidad y funcionalidad normales.\n\nAcudir nuevamente a urgencias o consultar con su pediatra si presenta aumento importante de dolor o inflamación, deformidad, incapacidad para mover el dedo, cambios de coloración, pérdida de sensibilidad, frialdad del dedo, aparición de fiebre o ausencia de mejoría progresiva en los siguientes días.`;
+                break;
+
+            case 'cefalea':
+                textoFinal = `Se recomienda mantener reposo relativo, favorecer una buena hidratación y evitar ayunos prolongados. Durante los episodios de dolor de cabeza es aconsejable permanecer en un ambiente tranquilo, con poca luz y evitando el uso de pantallas. \n\nPuede administrarse ${textoAntitermico}, preferiblemente al inicio del dolor.\n\nPodrá retomar su actividad habitual y acudir al colegio cuando se encuentre bien y el dolor esté controlado. Deben consultar nuevamente si presenta vómitos persistentes, somnolencia excesiva, dificultad para caminar o mover alguna extremidad, alteraciones de la visión o del habla, dolor muy intenso que no mejora con analgesia habitual, cefalea que le despierta por la noche o empeoramiento progresivo del estado general.`;
+                break;
+                
+            case 'convulsion':
+                textoFinal = `En caso de fiebre que le produce malestar administrar antitérmicos (${textoAntitermico}). \n\nEn caso de repetirse una convulsión, deben colocar al niño tumbado de lado en un lugar seguro, sin introducir nada en la boca y observando la duración del episodio. \n\nTras la crisis puede encontrarse somnoliento o algo confuso durante un corto periodo de tiempo, lo cual suele ser esperable. \n\nPodrá retomar su actividad habitual cuando lleve al menos 24 horas sin fiebre y se encuentre bien.\n\nDeben acudir nuevamente a urgencias si la convulsión se repite, si presenta dificultad para despertarle, comportamiento anormal, irritabilidad importante, vómitos repetidos, dolor de cabeza intenso o empeoramiento del estado general. \n\nLas convulsiones febriles suelen tener buen pronóstico y no afectan al desarrollo neurológico posterior del niño.`;
+                break;
+
+            case 'fiebre':
+                textoFinal = `Se recomienda mantener al niño bien hidratado, ofreciéndole líquidos de forma frecuente y sin forzar la alimentación si presenta poco apetito. \n\nEn caso de fiebre, para mejorar el malestar general, administrar ${textoAntitermico}.\n\nEs aconsejable mantener una temperatura ambiental agradable, evitar abrigarlo en exceso y favorecer el descanso hasta su recuperación completa. \n\nLa fiebre puede persistir durante varios días sin que ello implique necesariamente gravedad.\n\nDeberán consultar nuevamente con su pediatra o acudir a urgencias si el niño presenta decaimiento importante, dificultad para respirar, irritabilidad marcada, rechazo de líquidos, vómitos persistentes, aparición de manchas en la piel que no desaparecen al presionarlas o empeoramiento del estado general. Podrá reincorporarse a sus actividades habituales cuando permanezca al menos 24 horas sin fiebre y se encuentre clínicamente bien.`;
+                break;
+
+            case 'urticaria':
+                let dosisDesloratadina = "";
+                if (peso < 18) {
+                    dosisDesloratadina = "2.5 ml";
+                } else if (peso >= 18 && peso <= 35) {
+                    dosisDesloratadina = "5 ml";
+                } else {
+                    dosisDesloratadina = "10 ml";
+                }
+                textoFinal = `Se recomienda mantener cuidados habituales en domicilio, evitando el rascado y los baños o duchas con agua muy caliente, ya que pueden empeorar las lesiones cutáneas. \n\nPuede continuar con su alimentación habitual, procurando no introducir alimentos nuevos en los próximos días. \n\nAdministrar Desloratadina en jarabe 0.5 mg/ml: ${dosisDesloratadina} cada 24 horas. Cuando no han aparecido lesiones nuevas durante 1 a 2 días, se puede suspender. \n\nRecuerde que los brotes de urticaria suelen mejorar progresivamente en varios días, aunque algunas lesiones pueden aparecer y desaparecer durante más tiempo sin que ello implique mayor gravedad.\n\nAcudan nuevamente a Urgencias o contacten con su pediatra si presenta dificultad para respirar, ronquera, pitidos en el pecho, dificultad para tragar, babeo, hinchazón importante de la cara o empeoramiento del estado general. También si las lesiones aparecen tras la ingesta de un alimento o una picadura previamente relacionada con reacción alérgica. Se recomienda seguimiento con su pediatra habitual para control evolutivo.`;
                 break;
         }
 
-        // Mostrar texto en pantalla
-        textoInforme.textContent = textoFinal;
-        areaResultado.style.display = 'block';
-
-        // Copiar automáticamente al portapapeles
-        navigator.clipboard.writeText(textoFinal).then(() => {
-            // Cambiar el estilo del botón pulsado temporalmente
-            const textoOriginal = btnElement.innerHTML;
-            const colorOriginal = btnElement.style.backgroundColor;
-            
-            btnElement.innerHTML = '✅ Copiado';
-            btnElement.style.backgroundColor = '#27ae60'; // Verde de éxito
-            
-            setTimeout(() => {
-                btnElement.innerHTML = textoOriginal;
-                btnElement.style.backgroundColor = colorOriginal; // Volver al original
-            }, 2000);
-        }).catch(err => {
-            console.error('Error al auto-copiar: ', err);
-        });
+        procesarYCopiarTexto(textoFinal, btnElement);
     }
 
     function copiarAlPortapapeles() {
